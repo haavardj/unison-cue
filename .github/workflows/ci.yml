@@ -26,20 +26,7 @@ jobs:
       - run: go vet ./...
       - run: go test -race ./...
       - run: go build -o build/ ./...
-
-  vulncheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: go.mod
+      # Known-vulnerability scan of the code as built for this platform.
       - run: go install golang.org/x/vuln/cmd/govulncheck@v1.9.0
-      # Scan the code as built for each target platform. GOOS is set for
-      # the scan only; the tool itself must be built for the runner.
-      - run: |
-          for os in darwin windows; do
-            GOOS=$os "$(go env GOPATH)/bin/govulncheck" ./...
-          done
+      - run: govulncheck ./...
+
