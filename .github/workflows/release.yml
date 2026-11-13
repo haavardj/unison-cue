@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Builds the macOS app and Windows executables when a version tag is
+# pushed (git tag v0.1.0 && git push origin v0.1.0) and attaches them
+# to a draft GitHub release for review before publishing.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: write # create the release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - run: go test ./...
+      - name: Build
+        run: |
+          export VERSION="${GITHUB_REF_NAME#v}"   # macOS wants 1.2.3, not v1.2.3
+          ./scripts/build-macos.sh
+          ./scripts/build-windows.sh
+          cd build
+          zip -j UnisonCue-windows-x64.zip UnisonCue.exe
+          zip -j UnisonCue-windows-arm64.zip UnisonCue-arm64.exe
+          shasum -a 256 UnisonCue-macOS.zip UnisonCue-windows-*.zip > SHA256SUMS.txt
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" --draft --title "Unison Cue $TAG" --generate-notes \
+            build/UnisonCue-macOS.zip build/UnisonCue-windows-x64.zip \
+            build/UnisonCue-windows-arm64.zip build/SHA256SUMS.txt

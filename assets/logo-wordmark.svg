@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 180" width="760" height="180">
+  <!-- The U is the Unison logo (icons/U.svg, https://github.com/bcpierce00/unison, GPL-3.0). Unison Cue artwork: GPL-3.0-or-later. -->
+  <title>Unison Cue</title>
+  <defs>
+    <linearGradient id="u" gradientUnits="userSpaceOnUse" x1="19.223558" y1="7.3200717" x2="22.745747" y2="39.056557" gradientTransform="scale(0.934241,1.070387)">
+      <stop offset="0" stop-color="#fafe52"/><stop offset="0.675" stop-color="#ef9429"/><stop offset="1" stop-color="#e52b00"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a475c"/><stop offset="1" stop-color="#141b29"/></linearGradient>
+  </defs>
+  <g transform="translate(-6 -6) scale(0.1875)">
+  <rect x="102.4" y="102.4" width="819.2" height="819.2" rx="184.3" fill="url(#bg)"/>
+  <g fill="#e2e8f0"><rect x="258.0" y="739.3" width="507.9" height="36.9" rx="18.4"/><rect x="258.0" y="684.0" width="36.9" height="92.2" rx="18.4"/><rect x="729.1" y="684.0" width="36.9" height="92.2" rx="18.4"/></g>
+  <path transform="translate(251.42 184.90) scale(10.8612)" d="M 11.501514,0.70044889 L 3.5845995,9.8069515 L 7.1943842,9.8069515 L 7.1943842,29.250565 C 7.1943803,33.458778 7.4618286,36.652879 8.0147898,38.808291 C 8.3961341,40.262350 9.1927086,41.658059 10.393966,42.992360 C 11.595209,44.309562 13.257100,45.353724 15.316400,46.191942 C 17.394740,47.013054 20.418712,47.463572 24.422902,47.463571 C 27.740620,47.463571 30.444584,47.067690 32.503898,46.315003 C 34.563154,45.545211 36.205979,44.521473 37.426332,43.238482 C 38.665682,41.955498 39.511930,40.385764 39.969589,38.521149 C 40.427171,36.656551 40.625874,33.479553 40.625914,28.963423 L 40.625914,9.8069515 L 44.399780,9.8069515 L 36.482865,0.70044889 L 28.565951,9.8069515 L 32.175736,9.8069515 L 32.175736,29.988930 C 32.175707,32.965476 32.054402,35.105119 31.806553,36.388094 C 31.558647,37.671091 30.811749,38.739167 29.591458,39.628697 C 28.371113,40.501134 26.579260,40.941351 24.176781,40.941346 C 21.812394,40.941351 19.929842,40.470413 18.557002,39.546656 C 17.203196,38.605807 16.334993,37.394424 15.972724,35.854831 C 15.762969,34.896879 15.685570,32.811870 15.685582,29.578728 L 15.685582,9.8069515 L 19.418428,9.8069515 L 11.501514,0.70044889 z" fill="url(#u)" stroke="#1a1a1a" stroke-width="0.75" stroke-linejoin="miter"/>
+  </g>
+  <text x="196" y="118" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="84" font-weight="700" letter-spacing="-1" fill="#e5532b">Unison</text>
+  <text x="478" y="118" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="84" font-weight="400" letter-spacing="-1" fill="#6b7280">Cue</text>
+</svg>
