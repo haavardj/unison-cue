@@ -1,0 +1,133 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Unison Cue Settings</title>
+<link rel="stylesheet" href="app.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<nav class="tabs" role="tablist" aria-label="Settings sections">
+  <button role="tab" id="tab-general" aria-controls="pane-general" aria-selected="true">General</button>
+  <button role="tab" id="tab-profiles" aria-controls="pane-profiles" aria-selected="false">Profiles</button>
+  <button role="tab" id="tab-env" aria-controls="pane-env" aria-selected="false">Environment</button>
+  <button role="tab" id="tab-about" aria-controls="pane-about" aria-selected="false">About</button>
+</nav>
+
+<main>
+  <p id="load-error" class="banner error" hidden></p>
+
+  <!-- General -->
+  <section role="tabpanel" id="pane-general" aria-labelledby="tab-general">
+    <h2>Unison</h2>
+    <div class="field">
+      <label for="unisonPath">Unison program</label>
+      <input id="unisonPath" type="text" spellcheck="false" autocomplete="off">
+      <p class="hint" id="unisonPath-hint"></p>
+      <p class="err" data-for="unisonPath"></p>
+    </div>
+    <div class="field">
+      <label for="unisonDir">Profile folder</label>
+      <input id="unisonDir" type="text" spellcheck="false" autocomplete="off">
+      <p class="hint" id="unisonDir-hint"></p>
+      <p class="err" data-for="unisonDir"></p>
+    </div>
+    <div class="field">
+      <label for="extraArgs">Extra arguments for background syncs</label>
+      <textarea id="extraArgs" rows="2" spellcheck="false" placeholder="One argument per line, for example -fastcheck"></textarea>
+      <p class="hint">Added after <code>-batch -ui text</code> on every background sync.</p>
+    </div>
+
+    <h2>Reminders</h2>
+    <div class="row">
+      <label for="reminder-n">Remind me when a profile has not been synced for</label>
+      <span class="duration">
+        <input id="reminder-n" type="number" min="1" step="1">
+        <select id="reminder-unit" aria-label="Unit"><option value="1">hours</option><option value="24">days</option><option value="168">weeks</option></select>
+      </span>
+    </div>
+    <p class="err" data-for="reminderHours"></p>
+    <div class="row">
+      <label for="renotifyHours">Repeat the reminder at most every</label>
+      <span class="duration"><input id="renotifyHours" type="number" min="1" step="1"> hours</span>
+    </div>
+    <p class="err" data-for="renotifyHours"></p>
+
+    <h2>Behaviour</h2>
+    <div class="row">
+      <label for="timeoutMinutes">Stop a background sync after</label>
+      <span class="duration"><input id="timeoutMinutes" type="number" min="0" step="1"> minutes</span>
+    </div>
+    <p class="hint">0 means no limit.</p>
+    <p class="err" data-for="timeoutMinutes"></p>
+    <label class="check"><input id="notifySuccess" type="checkbox"> Notify me when a sync finishes without problems</label>
+    <label class="check"><input id="sshAskpass" type="checkbox"> Ask for ssh passwords and passphrases in a dialog</label>
+    <label class="check"><input id="autostart" type="checkbox"> Start Unison Cue when I log in</label>
+  </section>
+
+  <!-- Profiles -->
+  <section role="tabpanel" id="pane-profiles" aria-labelledby="tab-profiles" hidden>
+    <p class="intro">Profiles are the <code>.prf</code> files in <span id="profiles-dir" class="path"></span>.
+      “Remind after” overrides the general reminder interval; leave it empty to use the default.</p>
+    <table class="grid" id="profiles-table">
+      <thead><tr><th>Profile</th><th>In menu</th><th>In “Sync All”</th><th>Remind</th><th>Remind after (hours)</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p id="no-profiles" class="empty" hidden>No profiles found.</p>
+  </section>
+
+  <!-- Environment -->
+  <section role="tabpanel" id="pane-env" aria-labelledby="tab-env" hidden>
+    <p class="intro">Environment variables for unison, such as <code>UNISONLOCALHOSTNAME</code> (the host name unison
+      uses to find its archives) or <code>UNISON</code> (the profile folder). Variables set here take precedence over all others.</p>
+    <table class="grid" id="env-table">
+      <thead><tr><th>Name</th><th>Value</th><th><span class="sr">Remove</span></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="err" data-for="environment"></p>
+    <button type="button" id="env-add" class="secondary">Add Variable</button>
+
+    <div id="shell-import-block">
+      <label class="check"><input id="shellImport" type="checkbox"> Read <code>UNISON*</code> variables from my login shell at start-up</label>
+      <p class="hint">Apps started from the Finder do not see variables exported in <code>~/.zshrc</code> or <code>~/.bash_profile</code>.
+        Changes to this option apply the next time Unison Cue starts.</p>
+    </div>
+
+    <h2>In effect now</h2>
+    <table class="grid" id="effective-table">
+      <thead><tr><th>Name</th><th>Value</th><th>From</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p id="no-effective" class="empty" hidden>No <code>UNISON*</code> variables are set.</p>
+  </section>
+
+  <!-- About -->
+  <section role="tabpanel" id="pane-about" aria-labelledby="tab-about" hidden>
+    <div class="about">
+      <img src="logo.svg" alt="" width="96" height="96">
+      <div>
+        <h1>Unison Cue</h1>
+        <p id="about-version"></p>
+        <p id="about-unison"></p>
+      </div>
+    </div>
+    <dl class="paths">
+      <dt>Settings file</dt><dd><span id="path-config" class="path"></span> <button type="button" class="link" data-open="config">Show</button></dd>
+      <dt>Logs</dt><dd><span id="path-logs" class="path"></span> <button type="button" class="link" data-open="logs">Show</button></dd>
+      <dt>Profiles</dt><dd><span id="path-profiles" class="path"></span> <button type="button" class="link" data-open="profiles">Show</button></dd>
+    </dl>
+    <p class="hint">Unison Cue is free software under the GNU General Public License, version 3 or later.
+      The U in its logo is the Unison logo.</p>
+  </section>
+</main>
+
+<footer>
+  <span id="status" role="status" aria-live="polite"></span>
+  <button type="button" id="revert" class="secondary" disabled>Revert</button>
+  <button type="button" id="save" class="primary" disabled>Save</button>
+</footer>
+</body>
+</html>

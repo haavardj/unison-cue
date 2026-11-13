@@ -282,3 +282,40 @@ func TestChildEnvAddsPath(t *testing.T) {
 		t.Errorf("%d PATH entries", n)
 	}
 }
+
+func TestValidate(t *testing.T) {
+	exe, _ := fakeUnison(t, "exit 0")
+	good := DefaultConfig()
+	good.UnisonPath = exe
+	good.UnisonDir = t.TempDir()
+	good.Environment = map[string]string{"UNISONLOCALHOSTNAME": "x"}
+	good.SetProfile("p", ProfileSettings{ReminderHours: 12})
+	if errs := good.Validate(); len(errs) != 0 {
+		t.Errorf("valid config rejected: %v", errs)
+	}
+
+	bad := DefaultConfig()
+	bad.ReminderHours = 0
+	bad.RenotifyHours = -1
+	bad.TimeoutMinutes = -5
+	bad.UnisonPath = "unison" // relative
+	bad.UnisonDir = filepath.Join(t.TempDir(), "missing")
+	bad.Environment = map[string]string{"UNISON_CUE_SETTINGS_URL": "x"}
+	bad.Profiles = map[string]ProfileSettings{"p": {ReminderHours: -1}}
+	errs := bad.Validate()
+	for _, k := range []string{"reminderHours", "renotifyHours", "timeoutMinutes", "unisonPath", "unisonDir", "environment", "profiles.p.reminderHours"} {
+		if errs[k] == "" {
+			t.Errorf("no error for %s (got %v)", k, errs)
+		}
+	}
+}
+
+func TestNormalize(t *testing.T) {
+	c := DefaultConfig()
+	c.Profiles = map[string]ProfileSettings{"a": {}, "b": {NoReminder: true}}
+	c.Environment = map[string]string{}
+	c.Normalize()
+	if len(c.Profiles) != 1 || c.Environment != nil {
+		t.Errorf("normalized = %+v", c)
+	}
+}

@@ -40,6 +40,11 @@ type App struct {
 	wake      chan struct{}
 	ui        *menuUI
 	trayReady atomic.Bool
+
+	shellEnvNames []string // UNISON* variables imported from the login shell (guarded by mu)
+
+	settingsMu   sync.Mutex
+	settingsProc *os.Process // the open settings window, if any
 }
 
 func NewApp(store *core.Store) (*App, error) {

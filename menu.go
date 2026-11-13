@@ -119,6 +119,8 @@ func (a *App) rebuildMenu() {
 	systray.AddSeparator()
 
 	// Settings.
+	settingsItem := systray.AddMenuItem("Settings…", "Reminders, profiles, environment variables and more")
+	on(settingsItem, a.OpenSettings)
 	ui.autostart = systray.AddMenuItemCheckbox("Start at Login", "Start Unison Cue when you log in", platform.AutostartEnabled())
 	on(ui.autostart, func() {
 		want := !platform.AutostartEnabled()
@@ -151,6 +153,7 @@ func (a *App) rebuildMenu() {
 
 	quit := systray.AddMenuItem("Quit Unison Cue", "")
 	on(quit, func() {
+		a.closeSettings()
 		a.Cancel()
 		systray.Quit()
 	})

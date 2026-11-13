@@ -9,6 +9,7 @@ package platform
 
 import (
 	"os/exec"
+	"path/filepath"
 
 	"github.com/haavardj/unison-cue/internal/icon"
 )
@@ -31,3 +32,10 @@ func RunInTerminal(u, p string) error          { return exec.Command("x-terminal
 
 // AskPass is not implemented here; returning 1 makes ssh fail the login.
 func AskPass(prompt, mode string) int { return 1 }
+
+// SettingsWindowUnavailable: there is no embedded window here; the app
+// opens the settings in the browser.
+const SettingsWindowUnavailable = 3
+
+func RunSettingsWindow(url, dataDir string) int { return SettingsWindowUnavailable }
+func Reveal(path string) error                  { return Open(filepath.Dir(path)) }

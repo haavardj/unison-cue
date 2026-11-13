@@ -33,7 +33,13 @@ func main() {
 		os.Exit(platform.AskPass(prompt, os.Getenv("SSH_ASKPASS_PROMPT")))
 	}
 
+	// Started by the tray app to show the settings window.
+	if code, ran := runSettingsWindowIfRequested(); ran {
+		os.Exit(code)
+	}
+
 	showVersion := flag.Bool("version", false, "print the version and exit")
+	openSettings := flag.Bool("settings", false, "open the settings window at start-up")
 	flag.Parse()
 	if *showVersion {
 		fmt.Println("Unison Cue", version)
@@ -64,12 +70,13 @@ func main() {
 	defer release()
 	platform.MigrateLegacy()
 
-	importShellEnv(store)
+	shellNames := importShellEnv(store)
 
 	app, err := NewApp(store)
 	if err != nil {
 		log.Fatal(err)
 	}
+	app.shellEnvNames = shellNames
 	systray.Run(func() {
 		systray.SetTitle("")
 		app.trayReady.Store(true)
@@ -77,6 +84,9 @@ func main() {
 		go app.animate()
 		go app.worker()
 		go app.reminderLoop()
+		if *openSettings {
+			go app.OpenSettings()
+		}
 	}, func() {
 		log.Println("exiting")
 	})
@@ -85,9 +95,9 @@ func main() {
 // importShellEnv picks up UNISON* variables exported in the user's shell
 // start-up files, which apps started from the Finder do not inherit.
 // Only the names are logged; values may be private.
-func importShellEnv(store *core.Store) {
+func importShellEnv(store *core.Store) []string {
 	if cfg, err := store.LoadConfig(); err == nil && cfg.NoShellEnvironment {
-		return
+		return nil
 	}
 	names, err := core.ImportShellEnv(5 * time.Second)
 	if err != nil {
@@ -96,4 +106,5 @@ func importShellEnv(store *core.Store) {
 	if len(names) > 0 {
 		log.Printf("imported from login shell: %s", strings.Join(names, ", "))
 	}
+	return names
 }

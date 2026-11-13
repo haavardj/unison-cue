@@ -70,7 +70,26 @@ animated).
 
 ## Settings
 
-**More ▸ Edit Settings File…** opens `config.json`. It lives in
+**Settings…** in the menu opens the settings window, with four tabs:
+
+- **General:** the unison program and profile folder, extra arguments,
+  reminder intervals, the sync time limit, notifications, ssh dialogs and
+  Start at Login.
+- **Profiles:** for each profile, whether it appears in the menu, is part
+  of **Sync All**, and gets reminders, plus its own reminder interval.
+- **Environment:** variables passed to unison (such as
+  `UNISONLOCALHOSTNAME`), and a list of every `UNISON*` variable in effect
+  and where its value comes from.
+- **About:** versions, and where the settings, logs and profiles are.
+
+The window shows a page served by the app on `127.0.0.1`. It accepts only
+requests that carry a random token created for that window, so other
+programs and web pages cannot read or change the settings. On Windows the
+window needs Microsoft's WebView2 runtime, which comes with Windows 10 and
+11; without it, the settings open in your browser instead.
+
+The same settings live in `config.json`, which you can also edit by hand
+(**More ▸ Edit Settings File…**). It lives in
 `~/Library/Application Support/Unison Cue/` on macOS and
 `%AppData%\Unison Cue\` on Windows. Changes are applied within a minute.
 

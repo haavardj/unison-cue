@@ -39,6 +39,10 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 	<key>LSMinimumSystemVersion</key>     <string>13.0</string>
 	<key>LSUIElement</key>                <true/>
 	<key>NSHighResolutionCapable</key>    <true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key> <true/>
+	</dict>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>Unison Cue opens Terminal to run interactive syncs.</string>
 </dict>

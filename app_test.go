@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/haavardj/unison-cue/internal/core"
+	"github.com/haavardj/unison-cue/internal/settings"
 )
 
 type notes struct {
@@ -177,5 +178,42 @@ func TestSnoozeAndSettings(t *testing.T) {
 	// docs has reminders off and photos is hidden: nothing to nag about.
 	if len(n.get()) != 0 {
 		t.Errorf("unexpected reminder: %q", n.get())
+	}
+}
+
+func TestSettingsBackend(t *testing.T) {
+	a, _ := newTestApp(t)
+	st := a.Snapshot()
+	if len(st.Profiles) != 2 || st.Info.ProfileDir == "" || st.Config.ReminderHours != 24 {
+		t.Fatalf("snapshot = %+v", st)
+	}
+
+	st.Config.ReminderHours = 0
+	if _, errs, _ := a.Apply(settings.Update{Config: st.Config, Autostart: st.Autostart}); errs["reminderHours"] == "" {
+		t.Error("invalid reminder accepted")
+	}
+
+	st.Config.ReminderHours = 72
+	st.Config.Environment = map[string]string{"UNISONLOCALHOSTNAME": "from-settings"}
+	st.Config.Profiles["photos"] = core.ProfileSettings{Hidden: true}
+	st2, errs, err := a.Apply(settings.Update{Config: st.Config, Autostart: st.Autostart})
+	if err != nil || len(errs) > 0 {
+		t.Fatalf("apply: %v %v", err, errs)
+	}
+	if st2.Config.ReminderHours != 72 {
+		t.Errorf("not applied: %+v", st2.Config)
+	}
+	saved, _ := a.store.LoadConfig()
+	if saved.ReminderHours != 72 || !saved.Profile("photos").Hidden || saved.Environment["UNISONLOCALHOSTNAME"] != "from-settings" {
+		t.Errorf("not saved: %+v", saved)
+	}
+	var found bool
+	for _, v := range st2.Env {
+		if v.Name == "UNISONLOCALHOSTNAME" {
+			found = v.Value == "from-settings" && v.Source == "settings"
+		}
+	}
+	if !found {
+		t.Errorf("effective env = %+v", st2.Env)
 	}
 }

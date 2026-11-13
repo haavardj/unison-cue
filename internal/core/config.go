@@ -9,9 +9,12 @@ package core
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -225,4 +228,67 @@ func writeJSON(path string, v any) error {
 		return err
 	}
 	return os.Rename(tmp, path)
+}
+
+var envNameRE = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+
+// Validate checks settings entered in the settings window. It returns
+// messages keyed by setting name ("profiles.<name>.reminderHours" for
+// per-profile values); an empty map means the settings are valid.
+func (c *Config) Validate() map[string]string {
+	errs := map[string]string{}
+	const maxHours = 24 * 366
+	if !(c.ReminderHours > 0 && c.ReminderHours <= maxHours) {
+		errs["reminderHours"] = "Enter a period between 1 hour and 1 year."
+	}
+	if !(c.RenotifyHours > 0 && c.RenotifyHours <= maxHours) {
+		errs["renotifyHours"] = "Enter a number of hours greater than 0."
+	}
+	if !(c.TimeoutMinutes >= 0) {
+		errs["timeoutMinutes"] = "Enter 0 or a positive number of minutes."
+	}
+	if c.UnisonPath != "" {
+		if !filepath.IsAbs(c.UnisonPath) {
+			errs["unisonPath"] = "Enter the full path, or leave this empty."
+		} else if fi, err := os.Stat(c.UnisonPath); err != nil {
+			errs["unisonPath"] = "No program at this path."
+		} else if fi.IsDir() {
+			errs["unisonPath"] = "This is a folder; enter the path of the unison program itself."
+		}
+	}
+	if c.UnisonDir != "" {
+		if fi, err := os.Stat(c.UnisonDir); err != nil || !fi.IsDir() {
+			errs["unisonDir"] = "No folder at this path."
+		}
+	}
+	for k, v := range c.Environment {
+		switch {
+		case !envNameRE.MatchString(k):
+			errs["environment"] = fmt.Sprintf("“%s” is not a valid variable name (letters, digits and _ only).", k)
+		case strings.HasPrefix(k, "UNISON_CUE_"):
+			errs["environment"] = fmt.Sprintf("%s is reserved for Unison Cue itself.", k)
+		case strings.ContainsRune(v, 0):
+			errs["environment"] = fmt.Sprintf("The value of %s contains an invalid character.", k)
+		}
+	}
+	for name, ps := range c.Profiles {
+		if !(ps.ReminderHours >= 0 && ps.ReminderHours <= maxHours) {
+			errs["profiles."+name+".reminderHours"] = "Enter a number of hours, or leave empty."
+		}
+	}
+	return errs
+}
+
+// Normalize drops empty per-profile entries and an empty environment, so
+// the saved file only contains settings that differ from the defaults.
+func (c *Config) Normalize() {
+	for name, ps := range c.Profiles {
+		c.SetProfile(name, ps)
+	}
+	if len(c.Environment) == 0 {
+		c.Environment = nil
+	}
+	if len(c.ExtraArgs) == 0 {
+		c.ExtraArgs = nil
+	}
 }
