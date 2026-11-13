@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Unison Cue
+GenericName=File Synchronizer
+Comment=Sync Unison profiles on demand, with reminders
+Exec=unison-cue
+Icon=unison-cue
+Terminal=false
+Categories=Utility;Network;FileTransfer;
+Keywords=unison;sync;synchronize;backup;
+StartupNotify=false

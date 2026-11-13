@@ -113,6 +113,9 @@ func ICO(state State, frame int, sizes ...int) []byte {
 	return EncodeICO(imgs...)
 }
 
+// EncodePNG encodes any image as PNG.
+func EncodePNG(img image.Image) []byte { return encodePNG(img) }
+
 func encodePNG(img image.Image) []byte {
 	var buf bytes.Buffer
 	_ = png.Encode(&buf, img)

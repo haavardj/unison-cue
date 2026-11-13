@@ -6,6 +6,7 @@
 //
 //	go run ./cmd/mkicons -iconset build/AppIcon.iconset   # macOS, then iconutil
 //	go run ./cmd/mkicons -ico build/UnisonCue.ico        # Windows .exe icon
+//	go run ./cmd/mkicons -hicolor build/hicolor           # Linux icon theme tree
 //	go run ./cmd/mkicons -assets assets                   # logo PNG/SVG + tray preview
 package main
 
@@ -27,6 +28,7 @@ func main() {
 	iconset := flag.String("iconset", "", "write a macOS .iconset directory here")
 	ico := flag.String("ico", "", "write a Windows .ico file here")
 	assets := flag.String("assets", "", "write logo PNGs and a tray icon preview into this directory")
+	hicolor := flag.String("hicolor", "", "write a freedesktop.org icon theme tree (Linux) into this directory")
 	flag.Parse()
 
 	if *iconset != "" {
@@ -42,6 +44,18 @@ func main() {
 			imgs = append(imgs, icon.AppIcon(s))
 		}
 		if err := os.WriteFile(*ico, icon.EncodeICO(imgs...), 0o644); err != nil {
+			log.Fatal(err)
+		}
+	}
+	if *hicolor != "" {
+		for _, s := range []int{16, 24, 32, 48, 64, 128, 256, 512} {
+			d := filepath.Join(*hicolor, fmt.Sprintf("%dx%d", s, s), "apps")
+			mkdir(d)
+			writePNG(filepath.Join(d, "unison-cue.png"), icon.AppIcon(s))
+		}
+		d := filepath.Join(*hicolor, "scalable", "apps")
+		mkdir(d)
+		if err := os.WriteFile(filepath.Join(d, "unison-cue.svg"), []byte(icon.LogoSVG()), 0o644); err != nil {
 			log.Fatal(err)
 		}
 	}

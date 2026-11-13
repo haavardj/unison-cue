@@ -8,12 +8,17 @@
 [![Download for macOS](https://img.shields.io/badge/Download-macOS-2563eb?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/haavardj/unison-cue/releases/latest/download/UnisonCue-macOS.zip)
 [![Download for Windows x64](https://img.shields.io/badge/Download-Windows%20x64-2563eb?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/haavardj/unison-cue/releases/latest/download/UnisonCue-windows-x64.zip)
 [![Download for Windows ARM64](https://img.shields.io/badge/Download-Windows%20ARM64-2563eb?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/haavardj/unison-cue/releases/latest/download/UnisonCue-windows-arm64.zip)
+[![Download for Ubuntu](https://img.shields.io/badge/Download-Ubuntu%20.deb-2563eb?style=for-the-badge&logo=ubuntu&logoColor=white)](https://github.com/haavardj/unison-cue/releases/latest/download/unison-cue_amd64.deb)
 
 macOS 13 or later (Apple silicon and Intel) · Windows 10/11 ·
+Ubuntu and other Linux desktops (also
+[arm64 .deb](https://github.com/haavardj/unison-cue/releases/latest/download/unison-cue_arm64.deb),
+[tarball](https://github.com/haavardj/unison-cue/releases/latest/download/UnisonCue-linux-amd64.tar.gz),
+[arm64 tarball](https://github.com/haavardj/unison-cue/releases/latest/download/UnisonCue-linux-arm64.tar.gz)) ·
 [all releases](https://github.com/haavardj/unison-cue/releases) ·
 [install notes](#install)
 
-A small menu bar (macOS) and notification area (Windows) app for the
+A small menu bar (macOS) and system tray (Windows, Linux) app for the
 [Unison](https://github.com/bcpierce00/unison) file synchronizer.
 
 Syncing is always started by the user. The app keeps track of when each
@@ -34,6 +39,12 @@ icon gets a badge and a notification suggests a sync.
    - **Windows:** unzip and run `UnisonCue.exe`. The exe is not code
      signed, so SmartScreen may ask you to confirm (**More info → Run
      anyway**).
+   - **Ubuntu / Debian:** `sudo apt install ./unison-cue_amd64.deb` (or
+     `_arm64.deb`), then start **Unison Cue** from the applications menu.
+     This also installs `unison` and `zenity` if they are missing.
+   - **Other Linux:** unpack the tarball and run `./install.sh`. It
+     installs into `~/.local` for your user only; `./install.sh --uninstall`
+     removes it.
 3. Turn on **Start at Login** in the menu. Do this after moving the app to
    its final location, because the login item records the app's path.
 
@@ -100,7 +111,7 @@ window needs Microsoft's WebView2 runtime, which comes with Windows 10 and
 The same settings live in `config.json`, which you can also edit by hand
 (**More ▸ Edit Settings File…**). It lives in
 `~/Library/Application Support/Unison Cue/` on macOS and
-`%AppData%\Unison Cue\` on Windows. Changes are applied within a minute.
+`%AppData%\Unison Cue\` on Windows, and `~/.config/unison-cue/` on Linux. Changes are applied within a minute.
 
 ```json
 {
@@ -152,6 +163,22 @@ fixed value, or on Windows, use `environment` in the settings file. On
 Windows, variables set under *System → Environment Variables* are inherited
 anyway.
 
+## Linux notes
+
+- The tray icon needs a panel that supports AppIndicator / StatusNotifierItem
+  icons. Ubuntu has this by default. On plain GNOME (Fedora, Debian),
+  install the *AppIndicator and KStatusNotifierItem Support* extension
+  (`gnome-shell-extension-appindicator`). KDE Plasma, Xfce, Cinnamon and
+  MATE support it out of the box.
+- The settings open in your web browser instead of a separate window.
+- ssh passphrase dialogs use `zenity` (GNOME) or `kdialog` (KDE).
+- Interactive syncs open in your default terminal (`x-terminal-emulator`,
+  GNOME Terminal, Ptyxis, Console, Konsole, Xfce Terminal or xterm).
+- Settings and logs are kept in `~/.config/unison-cue`. **Start at Login**
+  adds `~/.config/autostart/unison-cue.desktop`.
+- The login-shell import reads `UNISON*` variables from `~/.profile` and
+  `~/.bashrc` (or your shell's equivalents).
+
 ## Remote roots and passwords
 
 Background runs have no terminal. When ssh needs a key passphrase, a
@@ -179,6 +206,7 @@ third-party dependencies are `fyne.io/systray` and `golang.org/x/sys`.
 go test ./...                    # unit and integration tests (fake unison)
 ./scripts/build-macos.sh         # build/Unison Cue.app (universal) + zip
 ./scripts/build-windows.sh       # build/UnisonCue.exe (x64) + -arm64.exe, cross-compiled
+./scripts/build-linux.sh         # build/UnisonCue-linux-*.tar.gz, and .deb packages if dpkg-deb is installed
 ```
 
 On Windows, the native build is

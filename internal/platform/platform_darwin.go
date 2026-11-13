@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	"github.com/haavardj/unison-cue/internal/icon"
 )
@@ -121,21 +120,6 @@ const (
 	osascriptPath = "/usr/bin/osascript"
 	openPath      = "/usr/bin/open"
 )
-
-// SingleInstance takes an exclusive lock on a file in dir. The login
-// agent starts the binary directly, bypassing LaunchServices, so a second
-// copy could otherwise run next to one opened from the Finder.
-func SingleInstance(dir string) (ok bool, release func()) {
-	f, err := os.OpenFile(filepath.Join(dir, ".lock"), os.O_CREATE|os.O_RDWR, 0o600)
-	if err != nil {
-		return true, func() {} // cannot tell; run anyway
-	}
-	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
-		f.Close()
-		return false, func() {}
-	}
-	return true, func() { f.Close() }
-}
 
 // MigrateLegacy moves the login item of the pre-release "Unison Tray"
 // name over to the current one.

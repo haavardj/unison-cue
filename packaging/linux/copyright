@@ -1,0 +1,22 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: unison-cue
+Source: https://github.com/haavardj/unison-cue
+
+Files: *
+Copyright: 2026 Håvard Dagenborg
+License: GPL-3.0-or-later
+
+Files: icons
+Comment: The U in the icons is the Unison logo (icons/U.svg in
+ https://github.com/bcpierce00/unison).
+Copyright: Unison authors
+License: GPL-3.0-or-later
+
+License: GPL-3.0-or-later
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the Free
+ Software Foundation, either version 3 of the License, or (at your option)
+ any later version.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in "/usr/share/common-licenses/GPL-3".

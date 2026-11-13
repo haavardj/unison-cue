@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -164,6 +165,9 @@ func DefaultStore() (*Store, error) {
 		return nil, err
 	}
 	dir := filepath.Join(base, AppName)
+	if runtime.GOOS == "linux" {
+		dir = filepath.Join(base, "unison-cue") // ~/.config/unison-cue, Linux style
+	}
 	// The project was called "Unison Tray" before release; keep its
 	// settings and sync history.
 	if _, err := os.Stat(dir); errors.Is(err, fs.ErrNotExist) {

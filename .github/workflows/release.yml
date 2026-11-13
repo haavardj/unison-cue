@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Builds the macOS app and Windows executables when a version tag is
-# pushed (git tag v0.1.0 && git push origin v0.1.0) and attaches them
-# to a draft GitHub release for review before publishing.
+# Builds all release packages when a version tag is pushed
+# (git tag v0.1.0 && git push origin v0.1.0) and attaches them to a draft
+# GitHub release for review before publishing.
 name: Release
 
 on:
@@ -12,10 +12,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-macos-windows:
     runs-on: macos-latest
-    permissions:
-      contents: write # create the release
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -29,15 +27,59 @@ jobs:
           export VERSION="${GITHUB_REF_NAME#v}"   # macOS wants 1.2.3, not v1.2.3
           ./scripts/build-macos.sh
           ./scripts/build-windows.sh
-          cd build
-          zip -j UnisonCue-windows-x64.zip UnisonCue.exe
-          zip -j UnisonCue-windows-arm64.zip UnisonCue-arm64.exe
-          shasum -a 256 UnisonCue-macOS.zip UnisonCue-windows-*.zip > SHA256SUMS.txt
+          mkdir dist
+          cp build/UnisonCue-macOS.zip dist/
+          zip -j dist/UnisonCue-windows-x64.zip build/UnisonCue.exe
+          zip -j dist/UnisonCue-windows-arm64.zip build/UnisonCue-arm64.exe
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: macos-windows
+          path: dist/
+          if-no-files-found: error
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - run: go test ./...
+      - name: Build
+        run: |
+          export VERSION="${GITHUB_REF_NAME#v}"
+          ./scripts/build-linux.sh
+          mkdir dist
+          cp build/UnisonCue-linux-*.tar.gz build/unison-cue_*.deb dist/
+      - name: Check the amd64 package installs and runs
+        run: |
+          sudo apt-get install -y --no-install-recommends ./dist/unison-cue_amd64.deb
+          unison-cue -version
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: linux
+          path: dist/
+          if-no-files-found: error
+
+  release:
+    needs: [build-macos-windows, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
       - name: Create draft release
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$TAG" --draft --title "Unison Cue $TAG" --generate-notes \
-            build/UnisonCue-macOS.zip build/UnisonCue-windows-x64.zip \
-            build/UnisonCue-windows-arm64.zip build/SHA256SUMS.txt
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          gh release create "$TAG" --draft --verify-tag --title "Unison Cue $TAG" --generate-notes *
