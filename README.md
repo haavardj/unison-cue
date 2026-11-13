@@ -1,4 +1,4 @@
-<img src="assets/logo-wordmark.svg" alt="Unison Cue" width="380">
+<img src="assets/logo-wordmark.svg" alt="Unison Cue" width="360">
 
 # Unison Cue
 
@@ -164,9 +164,13 @@ colours come from `icons/U.svg` in the
 licensed under GPL-3.0-or-later. Unison Cue is an independent front end,
 not part of the Unison project.
 
-`assets/` holds the project logo: `logo.svg`, `logo-wordmark.svg`, and PNG
-renderings. All icons are drawn in code (`internal/icon`). Regenerate the
-PNGs with `go run ./cmd/mkicons -assets assets`.
+The project logo adds a blue *cue light* in the U's hollow: the signal
+that it is time to sync, and the same dot the tray icon shows when a
+profile is due.
+
+`assets/` holds the logo (`logo.svg`, `logo-wordmark.svg`) and PNG
+renderings. All icons and both SVGs are generated from one description in
+`internal/icon`. Regenerate them with `go run ./cmd/mkicons -assets assets`.
 
 ## Layout
 

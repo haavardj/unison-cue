@@ -6,7 +6,7 @@
 //
 //	go run ./cmd/mkicons -iconset build/AppIcon.iconset   # macOS, then iconutil
 //	go run ./cmd/mkicons -ico build/UnisonCue.ico        # Windows .exe icon
-//	go run ./cmd/mkicons -assets assets                   # PNG logos + tray preview
+//	go run ./cmd/mkicons -assets assets                   # logo PNG/SVG + tray preview
 package main
 
 import (
@@ -51,6 +51,11 @@ func main() {
 			writePNG(filepath.Join(*assets, fmt.Sprintf("logo-%d.png", s)), icon.AppIcon(s))
 		}
 		writePNG(filepath.Join(*assets, "tray-states.png"), trayPreview())
+		for name, svg := range map[string]string{"logo.svg": icon.LogoSVG(), "logo-wordmark.svg": icon.WordmarkSVG()} {
+			if err := os.WriteFile(filepath.Join(*assets, name), []byte(svg), 0o644); err != nil {
+				log.Fatal(err)
+			}
+		}
 	}
 }
 

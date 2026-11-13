@@ -6,8 +6,11 @@ package icon
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/xml"
 	"image/png"
+	"io"
 	"math"
+	"strings"
 	"testing"
 )
 
@@ -99,6 +102,34 @@ func TestICOLayout(t *testing.T) {
 		img := b[off:]
 		if le.Uint32(img) != 40 || int(int32(le.Uint32(img[8:]))) != 2*s {
 			t.Errorf("entry %d BITMAPINFOHEADER wrong", i)
+		}
+	}
+}
+
+func TestSVGWellFormed(t *testing.T) {
+	for name, s := range map[string]string{"logo": LogoSVG(), "wordmark": WordmarkSVG()} {
+		d := xml.NewDecoder(strings.NewReader(s))
+		for {
+			_, err := d.Token()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				t.Fatalf("%s: %v", name, err)
+			}
+		}
+		if !strings.Contains(s, uPath) || !strings.Contains(s, `id="glow"`) {
+			t.Errorf("%s: missing logo path or glow", name)
+		}
+	}
+}
+
+func TestAppIconHasCueLight(t *testing.T) {
+	for _, size := range []int{16, 32, 128, 512} {
+		l := layoutFor(size)
+		c := AppIcon(size).NRGBAAt(int(l.cue.x), int(l.cue.y))
+		if c.B < 0xC0 || c.R > 0x80 {
+			t.Errorf("size %d: centre of cue light is %v, want blue", size, c)
 		}
 	}
 }

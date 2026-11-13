@@ -119,36 +119,75 @@ func encodePNG(img image.Image) []byte {
 	return buf.Bytes()
 }
 
-// AppIcon draws the application icon: the Unison logo resting in a tray,
-// on a dark rounded square. Small sizes (≤ 32 px) get the bare logo,
-// which stays legible where the full design would turn to mush.
+// Colours of the cue light: the same blue as the "due" dot in the tray.
+var (
+	cueBlue      = dueBlue
+	cueGlow      = color.NRGBA{0x60, 0xA5, 0xFA, 0x90}
+	cueHighlight = color.NRGBA{0xDB, 0xEA, 0xFE, 0xC0}
+	tileTop      = color.NRGBA{0x3A, 0x47, 0x5C, 0xFF}
+	tileBottom   = color.NRGBA{0x14, 0x1B, 0x29, 0xFF}
+)
+
+// appLayout is the geometry of the application icon at a given size,
+// shared by the raster (AppIcon) and vector (LogoSVG) versions.
+type appLayout struct {
+	tile         bool
+	m, in        float64 // tile margin and side
+	u            placement
+	cue          pt      // centre of the cue light
+	cueR         float64 // its radius
+	glowR0       float64 // the glow is full strength up to here...
+	glowR1       float64 // ...and fades out by here
+	strokeWidth  float64
+	hasGlow      bool
+	hasHighlight bool
+}
+
+func layoutFor(size int) appLayout {
+	s := float64(size)
+	if size <= 32 {
+		// Small sizes: the bare logo with a plain cue dot, like the tray's
+		// "due" icon; a tile and glow would only blur at this size.
+		pl := placeU(s/2, s/2, s*0.96)
+		return appLayout{u: pl, cue: pl.pt(cupCenter), cueR: cupHalfW * pl.k * 0.8,
+			strokeWidth: math.Max(logoStrokeWidth*pl.k, 0.7)}
+	}
+	// macOS icon grid: 824/1024 artwork on a rounded square.
+	m := s * 0.1
+	in := s - 2*m
+	pl := placeU(s/2, m+in*0.5, in*0.70)
+	r := cupHalfW * pl.k * 0.62
+	return appLayout{tile: true, m: m, in: in, u: pl, cue: pl.pt(cupCenter), cueR: r,
+		glowR0: r * 0.9, glowR1: r * 2.1, strokeWidth: logoStrokeWidth * pl.k * 1.5,
+		hasGlow: true, hasHighlight: true}
+}
+
+// AppIcon draws the application icon: the Unison logo with a glowing cue
+// light in its hollow (the signal that it is time to sync), on a dark
+// rounded square.
 func AppIcon(size int) *image.NRGBA {
 	s := float64(size)
 	c := NewCanvas(size)
-	if size <= 32 {
-		pl := placeU(s/2, s/2, s*0.96)
-		c.drawU(pl, uStyle{stroke: outline, strokeWidth: math.Max(logoStrokeWidth*pl.k, 0.7)})
-		return c.Image()
+	l := layoutFor(size)
+	if l.tile {
+		c.paint(roundRectMask(size, l.m, l.m, s-l.m, s-l.m, l.in*0.225), func(x, y float64) color.NRGBA {
+			return lerpColor(tileTop, tileBottom, clamp01((y-l.m)/l.in))
+		})
 	}
-
-	// Background tile, following the macOS icon grid (824/1024 artwork).
-	m := s * 0.1
-	in := s - 2*m
-	top, bottom := color.NRGBA{0x3A, 0x47, 0x5C, 0xFF}, color.NRGBA{0x14, 0x1B, 0x29, 0xFF}
-	tile := roundRectMask(size, m, m, s-m, s-m, in*0.225)
-	c.paint(tile, func(x, y float64) color.NRGBA { return lerpColor(top, bottom, clamp01((y-m)/in)) })
-
-	// The tray: a shallow dish under the logo.
-	trayY, trayW, trayT := m+in*0.80, in*0.62, in*0.045
-	trayCol := color.NRGBA{0xE2, 0xE8, 0xF0, 0xFF}
-	c.fill(roundRectMask(size, s/2-trayW/2, trayY-trayT/2, s/2+trayW/2, trayY+trayT/2, trayT/2), trayCol)
-	for _, sx := range []float64{-1, 1} {
-		x := s/2 + sx*(trayW/2-trayT/2)
-		c.fill(roundRectMask(size, x-trayT/2, trayY-in*0.09, x+trayT/2, trayY+trayT/2, trayT/2), trayCol)
+	c.drawU(l.u, uStyle{stroke: outline, strokeWidth: l.strokeWidth})
+	if l.hasGlow {
+		glow := make(mask, size*size)
+		for i := range glow {
+			x, y := float64(i%size)+0.5, float64(i/size)+0.5
+			t := clamp01(1 - (math.Hypot(x-l.cue.x, y-l.cue.y)-l.glowR0)/(l.glowR1-l.glowR0))
+			glow[i] = t * t
+		}
+		c.fill(glow, cueGlow)
 	}
-
-	pl := placeU(s/2, m+in*0.42, in*0.62)
-	c.drawU(pl, uStyle{stroke: outline, strokeWidth: logoStrokeWidth * pl.k * 1.5})
+	c.fill(circleMask(size, l.cue.x, l.cue.y, l.cueR), cueBlue)
+	if l.hasHighlight {
+		c.fill(circleMask(size, l.cue.x-l.cueR*0.3, l.cue.y-l.cueR*0.3, l.cueR*0.35), cueHighlight)
+	}
 	return c.Image()
 }
 
