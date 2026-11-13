@@ -163,7 +163,7 @@ Set `"noSshAskpass": true` to turn the dialogs off.
 
 ## Building
 
-Requires Go 1.27 or newer. All code is in this repository. The only
+Requires Go 1.27.4 or newer (older 1.27 releases have known `net/http` vulnerabilities). All code is in this repository. The only
 third-party dependencies are `fyne.io/systray` and `golang.org/x/sys`.
 
 ```sh
