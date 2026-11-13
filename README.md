@@ -3,6 +3,15 @@
 # Unison Cue
 
 [![CI](https://github.com/haavardj/unison-cue/actions/workflows/ci.yml/badge.svg)](https://github.com/haavardj/unison-cue/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/haavardj/unison-cue?label=latest)](https://github.com/haavardj/unison-cue/releases/latest)
+
+[![Download for macOS](https://img.shields.io/badge/Download-macOS-2563eb?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/haavardj/unison-cue/releases/latest/download/UnisonCue-macOS.zip)
+[![Download for Windows x64](https://img.shields.io/badge/Download-Windows%20x64-2563eb?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/haavardj/unison-cue/releases/latest/download/UnisonCue-windows-x64.zip)
+[![Download for Windows ARM64](https://img.shields.io/badge/Download-Windows%20ARM64-2563eb?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/haavardj/unison-cue/releases/latest/download/UnisonCue-windows-arm64.zip)
+
+macOS 13 or later (Apple silicon and Intel) · Windows 10/11 ·
+[all releases](https://github.com/haavardj/unison-cue/releases) ·
+[install notes](#install)
 
 A small menu bar (macOS) and notification area (Windows) app for the
 [Unison](https://github.com/bcpierce00/unison) file synchronizer.
@@ -16,7 +25,7 @@ icon gets a badge and a notification suggests a sync.
 1. Install [Unison](https://github.com/bcpierce00/unison) itself, for
    example with `brew install unison` (macOS) or the Windows zip from the
    [Unison releases](https://github.com/bcpierce00/unison/releases).
-2. Download the latest Unison Cue release from the
+2. Download Unison Cue with the buttons above, or from the
    [Releases page](https://github.com/haavardj/unison-cue/releases).
    - **macOS:** unzip and move **Unison Cue.app** to `/Applications`. The
      app is not notarized by Apple, so on first launch right-click it and
