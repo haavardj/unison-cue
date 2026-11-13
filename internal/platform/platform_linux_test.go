@@ -41,12 +41,13 @@ func TestTerminalCommand(t *testing.T) {
 
 // The profile name must reach unison as one argument, not as shell code.
 func TestTerminalScriptQuoting(t *testing.T) {
-	out, err := exec.Command("sh", "-c", strings.Replace(terminalScript, "; s=$?", "; exit; s=$?", 1),
-		"printf", "[%s]", "a b; echo injected").Output()
+	// "echo" stands in for unison; stop before the "press Enter" prompt.
+	script := strings.Replace(terminalScript, "; s=$?", "; exit; s=$?", 1)
+	out, err := exec.Command("sh", "-c", script, "echo", "a b; echo injected $(id)").Output()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(out) != "[a b; echo injected]" {
+	if string(out) != "a b; echo injected $(id)\n" {
 		t.Errorf("got %q", out)
 	}
 }
