@@ -51,6 +51,13 @@ type Config struct {
 	// NoSSHAskpass: do not show a dialog when ssh needs a passphrase,
 	// password or host key confirmation (the run fails instead).
 	NoSSHAskpass bool `json:"noSshAskpass,omitempty"`
+	// Environment holds extra variables for unison, for example
+	// {"UNISONLOCALHOSTNAME": "mylaptop"}. They take precedence over the
+	// app's own environment. UNISON here also selects the profile folder.
+	Environment map[string]string `json:"environment,omitempty"`
+	// NoShellEnvironment: on macOS, do not import UNISON* variables from
+	// the login shell at start-up.
+	NoShellEnvironment bool `json:"noShellEnvironment,omitempty"`
 
 	Profiles map[string]ProfileSettings `json:"profiles,omitempty"`
 }

@@ -31,6 +31,15 @@ func (p Profile) DisplayName() string {
 // DefaultUnisonDir mirrors how unison picks its directory: $UNISON if
 // set, else ~/.unison, else (macOS) ~/Library/Application Support/Unison.
 func DefaultUnisonDir() string {
+	return UnisonDirFor(nil)
+}
+
+// UnisonDirFor is DefaultUnisonDir with extra variables (from the
+// settings file) taking precedence over the process environment.
+func UnisonDirFor(extra map[string]string) string {
+	if d := extra["UNISON"]; d != "" {
+		return d
+	}
 	if d := os.Getenv("UNISON"); d != "" {
 		return d
 	}

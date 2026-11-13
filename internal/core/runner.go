@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 )
@@ -52,6 +53,8 @@ type Runner struct {
 	// AskPass is a program ssh runs to ask the user for a passphrase,
 	// password or host key confirmation (see AskPassEnv). Empty disables it.
 	AskPass string
+	// Env holds extra variables for unison; they override the inherited ones.
+	Env map[string]string
 }
 
 // AskPassEnvVar marks a process started by ssh as an askpass helper.
@@ -125,6 +128,10 @@ func (r *Runner) Run(ctx context.Context, profile string) Result {
 	cmd.Env = childEnv()
 	if r.AskPass != "" {
 		cmd.Env = append(cmd.Env, AskPassEnv(r.AskPass)...)
+	}
+	// os/exec keeps the last value of a duplicated variable, so these win.
+	for _, k := range sortedKeys(r.Env) {
+		cmd.Env = append(cmd.Env, k+"="+r.Env[k])
 	}
 	cmd.WaitDelay = 5 * time.Second
 	prepareCmd(cmd)
@@ -311,4 +318,13 @@ func FindUnison(configured string) string {
 		}
 	}
 	return ""
+}
+
+func sortedKeys(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }

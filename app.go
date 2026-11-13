@@ -92,7 +92,7 @@ func (a *App) unisonDir() string {
 	if a.cfg.UnisonDir != "" {
 		return a.cfg.UnisonDir
 	}
-	return core.DefaultUnisonDir()
+	return core.UnisonDirFor(a.cfg.Environment)
 }
 
 // scanProfiles re-reads the profile directory and reports whether the
@@ -200,6 +200,7 @@ func (a *App) runNext() bool {
 		ExtraArgs:  a.cfg.ExtraArgs,
 		LogDir:     a.store.LogDir(),
 		Timeout:    a.cfg.Timeout(),
+		Env:        a.cfg.Environment,
 	}
 	if !a.cfg.NoSSHAskpass {
 		if exe, err := os.Executable(); err == nil {

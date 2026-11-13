@@ -83,6 +83,7 @@ animated).
   "renotifyHours": 4,
   "timeoutMinutes": 120,
   "quietSuccess": false,
+  "environment": { "UNISONLOCALHOSTNAME": "my-laptop" },
   "profiles": {
     "photos": { "reminderHours": 168, "excludeFromSyncAll": true },
     "old-laptop": { "hidden": true }
@@ -100,10 +101,28 @@ animated).
 | `timeoutMinutes` | Stops a background run that takes longer than this. 0 means no limit. |
 | `quietSuccess` | Skip the notification when a sync finishes without problems. |
 | `noSshAskpass` | Never show ssh passphrase/password dialogs. |
+| `environment` | Extra environment variables for unison, such as `UNISONLOCALHOSTNAME`. These take precedence over all others. `UNISON` here also sets the profile folder. |
+| `noShellEnvironment` | macOS: do not read `UNISON*` variables from your login shell (see below). |
 | `profiles.<name>` | `hidden`, `excludeFromSyncAll`, `noReminder`, `reminderHours` |
 
 `state.json` in the same folder records the last sync times. The app's own
 log is `unison-cue.log`, and unison's output is in `logs/`.
+
+## Environment variables
+
+Unison reads several environment variables, such as `UNISON` (the profile
+folder) and `UNISONLOCALHOSTNAME` (the host name used to find its
+archives). If unison sees a different host name, it does not find its
+archives and treats the next sync as a first sync.
+
+On macOS, apps started from the Finder or at login do not see variables
+exported in `~/.zshrc` or `~/.bash_profile`. At start-up, Unison Cue
+therefore runs your login shell once and copies every `UNISON*` variable it
+finds that is not already set. The app's log
+(`unison-cue.log`) lists the names it imported, without their values. For a
+fixed value, or on Windows, use `environment` in the settings file. On
+Windows, variables set under *System → Environment Variables* are inherited
+anyway.
 
 ## Remote roots and passwords
 

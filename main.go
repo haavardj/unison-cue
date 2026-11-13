@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"fyne.io/systray"
 
@@ -63,6 +64,8 @@ func main() {
 	defer release()
 	platform.MigrateLegacy()
 
+	importShellEnv(store)
+
 	app, err := NewApp(store)
 	if err != nil {
 		log.Fatal(err)
@@ -77,4 +80,20 @@ func main() {
 	}, func() {
 		log.Println("exiting")
 	})
+}
+
+// importShellEnv picks up UNISON* variables exported in the user's shell
+// start-up files, which apps started from the Finder do not inherit.
+// Only the names are logged; values may be private.
+func importShellEnv(store *core.Store) {
+	if cfg, err := store.LoadConfig(); err == nil && cfg.NoShellEnvironment {
+		return
+	}
+	names, err := core.ImportShellEnv(5 * time.Second)
+	if err != nil {
+		log.Printf("reading login shell environment: %v", err)
+	}
+	if len(names) > 0 {
+		log.Printf("imported from login shell: %s", strings.Join(names, ", "))
+	}
 }
