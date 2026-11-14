@@ -24,7 +24,8 @@ func classify(prompt, mode string) promptKind {
 	case "none":
 		return infoPrompt
 	}
-	if strings.Contains(prompt, "(yes/no") {
+	// The second form is ssh's follow-up after an unrecognised answer.
+	if strings.Contains(prompt, "(yes/no") || strings.Contains(prompt, "Please type 'yes', 'no'") {
 		return yesNoPrompt
 	}
 	return secretPrompt

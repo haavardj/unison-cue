@@ -13,6 +13,7 @@ func TestClassify(t *testing.T) {
 		{"Enter passphrase for key '/Users/me/.ssh/id_ed25519': ", "", secretPrompt},
 		{"me@host's password: ", "", secretPrompt},
 		{"Are you sure you want to continue connecting (yes/no/[fingerprint])? ", "", yesNoPrompt},
+		{"Please type 'yes', 'no' or the fingerprint: ", "", yesNoPrompt},
 		{"Allow use of key?", "confirm", confirmPrompt},
 		{"Confirm user presence for key", "none", infoPrompt},
 	}

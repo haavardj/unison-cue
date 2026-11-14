@@ -320,6 +320,24 @@ func FindUnison(configured string) string {
 	return ""
 }
 
+// UnisonVersion returns the output of `unison -version`, or "" if it
+// cannot be run. On Windows the console window is hidden, since unison
+// is a console program and the app has no console of its own.
+func UnisonVersion(path string) string {
+	if path == "" {
+		return ""
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, path, "-version")
+	prepareCmd(cmd)
+	out, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(out))
+}
+
 func sortedKeys(m map[string]string) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {

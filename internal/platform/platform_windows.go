@@ -4,6 +4,7 @@
 package platform
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -126,7 +127,24 @@ func SetAutostart(on bool) error {
 	if err != nil {
 		return err
 	}
+	if inDir(exe, os.TempDir()) {
+		return errors.New("Unison Cue is running from a temporary folder, probably straight from the zip file. " +
+			"Unzip it to a permanent folder, start it from there and try again.")
+	}
 	return k.SetStringValue(runValue, `"`+exe+`"`)
+}
+
+// inDir reports whether path is inside dir. Windows paths compare
+// without regard to case; 8.3 short names are expanded where possible.
+func inDir(path, dir string) bool {
+	if p, err := filepath.EvalSymlinks(path); err == nil {
+		path = p
+	}
+	if d, err := filepath.EvalSymlinks(dir); err == nil {
+		dir = d
+	}
+	rel, err := filepath.Rel(dir, path)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, `..\`)
 }
 
 // SingleInstance takes a per-user named mutex. ok is false if another

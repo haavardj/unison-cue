@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"slices"
 	"strings"
 	"sync"
@@ -79,13 +78,7 @@ func (a *App) loadConfig() error {
 }
 
 func (a *App) probeUnisonVersion(path string) {
-	v := ""
-	if path != "" {
-		out, err := exec.Command(path, "-version").Output()
-		if err == nil {
-			v = strings.TrimSpace(string(out))
-		}
-	}
+	v := core.UnisonVersion(path)
 	a.mu.Lock()
 	a.unisonVersion = v
 	a.mu.Unlock()
