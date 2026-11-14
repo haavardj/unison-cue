@@ -48,7 +48,11 @@ icon gets a badge and a notification suggests a sync.
 3. Turn on **Start at Login** in the menu. Do this after moving the app to
    its final location, because the login item records the app's path.
 
-Each release has a `SHA256SUMS.txt` for checking downloads.
+Each release has a `SHA256SUMS.txt` for checking downloads. Every file
+also has a build attestation: with the [GitHub CLI](https://cli.github.com),
+`gh attestation verify UnisonCue-windows-x64.zip -R haavardj/unison-cue`
+confirms that the file was built by this repository's release workflow
+and has not been changed since.
 
 ## What it does
 
@@ -279,5 +283,4 @@ the app handles passwords, files and external programs.
   does nothing. Use the tray menu.
 - Only syncs started from Unison Cue count as "last synced". Syncs run
   from the command line are not detected.
-- The Windows variant compiles and its logic is tested here on macOS, but
-  it has not yet been run on a Windows machine.
+- On Windows, the app has been tested on Windows 11 (x64) only.

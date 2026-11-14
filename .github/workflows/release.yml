@@ -26,14 +26,15 @@ jobs:
         run: |
           export VERSION="${GITHUB_REF_NAME#v}"   # macOS wants 1.2.3, not v1.2.3
           ./scripts/build-macos.sh
-          ./scripts/build-windows.sh
+          # EMBED_ICON gives the exe its icon, product name and version.
+          EMBED_ICON=1 ./scripts/build-windows.sh
           mkdir dist
           cp build/UnisonCue-macOS.zip dist/
           zip -j dist/UnisonCue-windows-x64.zip build/UnisonCue.exe
           zip -j dist/UnisonCue-windows-arm64.zip build/UnisonCue-arm64.exe
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: macos-windows
+          name: release-macos-windows
           path: dist/
           if-no-files-found: error
 
@@ -59,7 +60,7 @@ jobs:
           unison-cue -version
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: linux
+          name: release-linux
           path: dist/
           if-no-files-found: error
 
@@ -68,11 +69,25 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # create the release
+      # Attestations: a Sigstore-signed record, kept by GitHub, that each
+      # file was built by this workflow from this repository.
+      id-token: write
+      attestations: write
+      artifact-metadata: write
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
+          pattern: release-*
           merge-multiple: true
+      - name: Checksums
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: dist/*
       - name: Create draft release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -80,6 +95,4 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           cd dist
-          sha256sum * > SHA256SUMS.txt
-          cat SHA256SUMS.txt
           gh release create "$TAG" --draft --verify-tag --title "Unison Cue $TAG" --generate-notes *
