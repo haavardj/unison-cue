@@ -77,6 +77,7 @@ func main() {
 		log.Fatal(err)
 	}
 	app.shellEnvNames = shellNames
+	platform.InitNotifications()
 	systray.Run(func() {
 		systray.SetTitle("")
 		app.trayReady.Store(true)

@@ -34,11 +34,6 @@ func runScript(body string, args ...string) *exec.Cmd {
 	return exec.Command(osascriptPath, argv...)
 }
 
-// Notify shows a notification through Notification Center.
-func Notify(title, body string) error {
-	return runScript(`display notification (item 2 of argv) with title (item 1 of argv)`, title, body).Run()
-}
-
 // Open opens a file or folder with its default application.
 func Open(path string) error { return exec.Command(openPath, path).Start() }
 

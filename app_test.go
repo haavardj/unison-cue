@@ -17,14 +17,16 @@ import (
 )
 
 type notes struct {
-	mu   sync.Mutex
-	list []string
+	mu      sync.Mutex
+	list    []string
+	targets []string // what a click on each notification opens
 }
 
-func (n *notes) add(title, body string) error {
+func (n *notes) add(title, body, target string) error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	n.list = append(n.list, title+" | "+body)
+	n.targets = append(n.targets, target)
 	return nil
 }
 
@@ -114,6 +116,14 @@ func TestSyncAllAndReminders(t *testing.T) {
 	got := n.get()
 	if len(got) != 2 || !strings.Contains(got[1], "Photos has unresolved conflicts") {
 		t.Fatalf("notifications = %q", got)
+	}
+	// The reminder opens nothing; the sync result opens the log of the
+	// one profile that needs attention.
+	n.mu.Lock()
+	targets := append([]string(nil), n.targets...)
+	n.mu.Unlock()
+	if want := filepath.Join(a.store.LogDir(), "photos.log"); targets[0] != "" || targets[1] != want {
+		t.Errorf("click targets = %q, want \"\" and %q", targets, want)
 	}
 	a.mu.Lock()
 	docs, photos := a.state.Profiles["docs"], a.state.Profiles["photos"]

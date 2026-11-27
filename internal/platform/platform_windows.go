@@ -62,8 +62,12 @@ $id = '{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.
 [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($id).Show([Windows.UI.Notifications.ToastNotification]::new($t))
 `
 
-// Notify shows a Windows toast notification.
-func Notify(title, body string) error {
+// InitNotifications does nothing on Windows.
+func InitNotifications() {}
+
+// Notify shows a Windows toast notification. The click target is not
+// used: a toast sent through PowerShell cannot react to clicks.
+func Notify(title, body, _ string) error {
 	cmd := hidden(exec.Command(system32(`WindowsPowerShell\v1.0\powershell.exe`), "-NoProfile", "-NonInteractive",
 		"-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-Command", toastScript))
 	cmd.Env = append(os.Environ(), "UT_TITLE="+title, "UT_BODY="+body)

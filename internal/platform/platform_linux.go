@@ -61,9 +61,12 @@ func notificationIcon() string {
 	return appIconRef
 }
 
+// InitNotifications does nothing on Linux.
+func InitNotifications() {}
+
 // Notify shows a desktop notification through the freedesktop.org
 // notification service on the session bus.
-func Notify(title, body string) error {
+func Notify(title, body, _ string) error {
 	conn, err := dbus.SessionBus()
 	if err != nil {
 		return err

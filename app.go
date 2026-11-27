@@ -297,7 +297,16 @@ func (a *App) reportBatch(results []core.Result) {
 	}
 	a.mu.Unlock()
 	if title != "" {
-		notify(title, body)
+		// A click opens the log worth reading: the one problem, or the
+		// only profile synced; otherwise the folder with all of them.
+		target := a.store.LogDir()
+		switch {
+		case len(problems) == 1:
+			target = problems[0].LogPath
+		case len(problems) == 0 && len(done) == 1:
+			target = done[0].LogPath
+		}
+		notifyOpen(title, body, target)
 	}
 }
 
@@ -394,8 +403,12 @@ func (a *App) updateConfig(f func(*core.Config)) {
 // notifyFunc is replaced in tests.
 var notifyFunc = platform.Notify
 
-func notify(title, body string) {
-	if err := notifyFunc(title, body); err != nil {
+func notify(title, body string) { notifyOpen(title, body, "") }
+
+// notifyOpen shows a notification that opens target (a log file or a
+// folder) when clicked, on the platforms that support it.
+func notifyOpen(title, body, target string) {
+	if err := notifyFunc(title, body, target); err != nil {
 		log.Printf("notification failed: %v", err)
 	}
 }
