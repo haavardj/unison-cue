@@ -25,13 +25,18 @@ func TrayIcon(s icon.State, frame int) (template, regular []byte) {
 // UsesTemplateIcons is true on macOS.
 const UsesTemplateIcons = true
 
-// Notify shows a notification through Notification Center. Text is passed
-// in the environment, so no quoting or escaping is involved.
+// runScript runs an AppleScript "on run argv" body with args as argv, so
+// no quoting or escaping is involved. Text must go through argv, which
+// osascript decodes as UTF-8: "system attribute" reads the environment as
+// Mac OS Roman and garbles every non-ASCII character.
+func runScript(body string, args ...string) *exec.Cmd {
+	argv := append([]string{"-e", "on run argv\n" + body + "\nend run", "--"}, args...)
+	return exec.Command(osascriptPath, argv...)
+}
+
+// Notify shows a notification through Notification Center.
 func Notify(title, body string) error {
-	cmd := exec.Command(osascriptPath, "-e",
-		`display notification (system attribute "UT_BODY") with title (system attribute "UT_TITLE")`)
-	cmd.Env = append(os.Environ(), "UT_TITLE="+title, "UT_BODY="+body)
-	return cmd.Run()
+	return runScript(`display notification (item 2 of argv) with title (item 1 of argv)`, title, body).Run()
 }
 
 // Open opens a file or folder with its default application.
@@ -44,13 +49,10 @@ func EditText(path string) error { return exec.Command(openPath, "-t", path).Sta
 // the user can resolve conflicts that batch mode skipped.
 func RunInTerminal(unisonPath, profile string) error {
 	line := shellQuote(unisonPath) + " " + shellQuote(profile)
-	cmd := exec.Command(osascriptPath,
-		"-e", `tell application "Terminal"`,
-		"-e", `activate`,
-		"-e", `do script (system attribute "UT_CMD")`,
-		"-e", `end tell`)
-	cmd.Env = append(os.Environ(), "UT_CMD="+line)
-	return cmd.Run()
+	return runScript(`tell application "Terminal"
+activate
+do script (item 1 of argv)
+end tell`, line).Run()
 }
 
 func shellQuote(s string) string {

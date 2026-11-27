@@ -8,27 +8,25 @@ import (
 	"os/exec"
 )
 
-// Each script reads its text from the environment, so nothing is quoted.
+// Each script reads its text from argv (see runScript), so nothing is quoted.
 // "activate" brings the dialog in front of other windows.
 const (
 	askSecretScript = `activate
-set r to display dialog (system attribute "UT_PROMPT") with title (system attribute "UT_TITLE") default answer "" with hidden answer with icon caution buttons {"Cancel", "OK"} default button "OK" cancel button "Cancel" giving up after 180
+set r to display dialog (item 1 of argv) with title (item 2 of argv) default answer "" with hidden answer with icon caution buttons {"Cancel", "OK"} default button "OK" cancel button "Cancel" giving up after 180
 if gave up of r then error number -128
 return text returned of r`
 
 	askYesNoScript = `activate
-display dialog (system attribute "UT_PROMPT") with title (system attribute "UT_TITLE") with icon caution buttons {"No", "Yes"} default button "No" cancel button "No" giving up after 180
+display dialog (item 1 of argv) with title (item 2 of argv) with icon caution buttons {"No", "Yes"} default button "No" cancel button "No" giving up after 180
 if gave up of result then error number -128`
 
 	askConfirmScript = `activate
-display dialog (system attribute "UT_PROMPT") with title (system attribute "UT_TITLE") buttons {"Cancel", "OK"} default button "OK" cancel button "Cancel" giving up after 180
+display dialog (item 1 of argv) with title (item 2 of argv) buttons {"Cancel", "OK"} default button "OK" cancel button "Cancel" giving up after 180
 if gave up of result then error number -128`
 )
 
 func osascript(script, prompt string) *exec.Cmd {
-	cmd := exec.Command(osascriptPath, "-e", script)
-	cmd.Env = append(os.Environ(), "UT_PROMPT="+dialogText(prompt), "UT_TITLE="+askPassTitle)
-	return cmd
+	return runScript(script, dialogText(prompt), askPassTitle)
 }
 
 // AskPass implements the SSH_ASKPASS protocol: show prompt, write the
